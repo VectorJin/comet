@@ -1,6 +1,7 @@
 package com.vector.comet.util.http;
 
 import com.vector.comet.constants.BaseConstants;
+import com.vector.comet.util.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -18,6 +19,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +31,8 @@ import java.util.concurrent.Future;
  * Created by jinku on 2018/3/31.
  */
 public class AsyncHttpClient {
+
+    private static Logger logger = LoggerFactory.getLogger(AsyncHttpClient.class);
 
     private static AsyncHttpClient instance = new AsyncHttpClient();
 
@@ -75,37 +80,70 @@ public class AsyncHttpClient {
     }
 
     public Future<HttpResponse> asyncPost(String url, Map<String, String> paramsMap,
-                                          final HttpCallback callback) throws Exception {
-        final HttpPost httpPost = new HttpPost(url);
-        List<NameValuePair> paramsList = new ArrayList<NameValuePair>();
-        for (Map.Entry<String, String> entry : paramsMap.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            paramsList.add(new BasicNameValuePair(key, value));
+                                          final HttpCallback callback) {
+        if (StringUtils.isEmpty(url) || paramsMap == null) {
+            return null;
         }
-        httpPost.setEntity(new UrlEncodedFormEntity(paramsList, "UTF-8"));
-        return httpclient.execute(httpPost, new FutureCallback<HttpResponse>(){
-            public void completed(HttpResponse httpResponse) {
-                if(httpResponse.getStatusLine().getStatusCode() == 200) {
-                    HttpEntity httpEntity = httpResponse.getEntity();
-                    try {
-                        String response = EntityUtils.toString(httpEntity);
-                        callback.onSuccess(response);
-                    } catch (Exception e) {
-                        // TODO log
-                        callback.onFailed(e);
+
+        try {
+            final HttpPost httpPost = new HttpPost(url);
+            List<NameValuePair> paramsList = new ArrayList<NameValuePair>();
+            for (Map.Entry<String, String> entry : paramsMap.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                paramsList.add(new BasicNameValuePair(key, value));
+            }
+            httpPost.setEntity(new UrlEncodedFormEntity(paramsList, "UTF-8"));
+            return httpclient.execute(httpPost, new FutureCallback<HttpResponse>() {
+                public void completed(HttpResponse httpResponse) {
+                    if (callback == null) {
+                        return;
+                    }
+                    if (httpResponse.getStatusLine().getStatusCode() == 200) {
+                        HttpEntity httpEntity = httpResponse.getEntity();
+                        try {
+                            String response = EntityUtils.toString(httpEntity);
+                            callback.onSuccess(response);
+                        } catch (Exception e) {
+                            // TODO log
+                            callback.onFailed(e);
+                        }
                     }
                 }
-            }
 
-            public void failed(Exception e) {
-                callback.onFailed(e);
-            }
+                public void failed(Exception e) {
+                    if (callback == null) {
+                        return;
+                    }
+                    callback.onFailed(e);
+                }
 
-            public void cancelled() {
-                callback.onFailed(null);
+                public void cancelled() {
+                    if (callback == null) {
+                        return;
+                    }
+                    callback.onFailed(null);
+                }
+            });
+        } catch (Exception e) {
+            logger.error("AsyncHttpClient asyncPost exception", e);
+            return null;
+        }
+    }
+
+    public String syncPost(String url, Map<String, String> paramsMap) {
+        Future<HttpResponse> future = asyncPost(url, paramsMap, null);
+        try {
+            HttpResponse httpResponse = future.get();
+            if (httpResponse != null && httpResponse.getStatusLine().getStatusCode() == 200) {
+                HttpEntity httpEntity = httpResponse.getEntity();
+                String response = EntityUtils.toString(httpEntity);
+                return response;
             }
-        });
+        } catch (Exception e) {
+            logger.error("AsyncHttpClient syncPost exception", e);
+        }
+        return null;
     }
 
     public void close() {

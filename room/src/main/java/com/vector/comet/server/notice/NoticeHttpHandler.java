@@ -47,8 +47,11 @@ public class NoticeHttpHandler extends AbstractHttpHandler {
 
         // 获取对应的Channel
         Channel channel = UserChannelContext.getUserChannel(userId);
+        if (channel == null) {
+            return ResponseBean.getErrorResponse(ErrorCode.NOT_ONLINE);
+        }
+
         // 将消息写给用户端
-        channel.write(null);
         ResponseBean responseBean = ResponseBean.getFromResponse(busContent);
         channel.write(new TextWebSocketFrame(JSONObject.toJSONString(responseBean)));
 

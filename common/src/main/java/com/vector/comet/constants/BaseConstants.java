@@ -12,4 +12,6 @@ public class BaseConstants {
     public final static String PUSHER_URL = "/pusher/push";
 
     public final static String NOTICE_URL = "/room/notice";
+
+    public final static int NOTICE_PORT = 8081;
 }

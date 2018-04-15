@@ -52,4 +52,12 @@ public class UserChannelContext {
             }
         }
     }
+
+    public static Map<Channel, Object> getChannelsMap() {
+        return channelsMap;
+    }
+
+    public static Map<String, Channel> getUserId2Channel() {
+        return userId2Channel;
+    }
 }

@@ -1,6 +1,7 @@
 package com.vector.comet.server.room;
 
 import com.vector.comet.netty.AbstractServer;
+import com.vector.comet.task.CheckUserChannelTimer;
 import org.jboss.netty.channel.*;
 
 /**
@@ -9,10 +10,13 @@ import org.jboss.netty.channel.*;
 public class RoomServer extends AbstractServer {
 
     private RoomNettyHandler roomNettyHandler;
+    private CheckUserChannelTimer checkUserChannelTimer;
 
     public RoomServer() {
         super();
         roomNettyHandler = new RoomNettyHandler();
+        checkUserChannelTimer = new CheckUserChannelTimer();
+        checkUserChannelTimer.start();
     }
 
     @Override
@@ -34,5 +38,6 @@ public class RoomServer extends AbstractServer {
     @Override
     public void onClose() {
         roomNettyHandler.closeChannels();
+        checkUserChannelTimer.destroy();
     }
 }

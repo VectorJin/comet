@@ -7,7 +7,8 @@ public enum ErrorCode {
 
     SUCCESS(0, "操作成功"),
     FAILED(1, "操作失败"),
-    BAD_REQUEST(2, "请求非法");
+    BAD_REQUEST(2, "请求非法"),
+    NOT_ONLINE(3, "用户不在线");
 
     private int code;
     private String desc;

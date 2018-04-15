@@ -19,10 +19,32 @@ public class RedisUtil {
         pool = new JedisPool(config, redisHost, redisPort);
     }
 
+    public static String getValue(String key) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.get(key);
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+    }
+
     public static void setValue(String key, String value) {
         Jedis jedis = pool.getResource();
         try {
             jedis.set(key, value);
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+    }
+
+    public static void deleteKey(String key) {
+        Jedis jedis = pool.getResource();
+        try {
+            jedis.del(key);
         } finally {
             if (jedis != null) {
                 jedis.close();

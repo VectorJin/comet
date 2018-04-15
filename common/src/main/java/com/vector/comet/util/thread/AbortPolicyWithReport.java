@@ -1,9 +1,14 @@
 package com.vector.comet.util.thread;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
+
+    private static Logger logger = LoggerFactory.getLogger(AbortPolicyWithReport.class);
     
     private final String threadName;
 
@@ -19,7 +24,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 threadName, e.getPoolSize(), e.getActiveCount(), e.getCorePoolSize(), e.getMaximumPoolSize(), e.getLargestPoolSize(),
                 e.getTaskCount(), e.getCompletedTaskCount(), e.isShutdown(), e.isTerminated(), e.isTerminating());
 
-        // TODO log
+        logger.error(msg);
         throw new RejectedExecutionException(msg);
     }
 

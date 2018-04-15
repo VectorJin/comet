@@ -105,7 +105,7 @@ public class AsyncHttpClient {
                             String response = EntityUtils.toString(httpEntity);
                             callback.onSuccess(response);
                         } catch (Exception e) {
-                            // TODO log
+                            logger.error("AsyncHttpClient asyncPost exception", e);
                             callback.onFailed(e);
                         }
                     }

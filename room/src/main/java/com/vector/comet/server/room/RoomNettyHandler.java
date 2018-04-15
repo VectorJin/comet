@@ -2,11 +2,14 @@ package com.vector.comet.server.room;
 
 import com.alibaba.fastjson.JSONObject;
 import com.vector.comet.constants.ErrorCode;
+import com.vector.comet.constants.RedisKey;
 import com.vector.comet.context.UserChannelContext;
 import com.vector.comet.entry.RequestBean;
 import com.vector.comet.entry.ResponseBean;
+import com.vector.comet.util.IpUtils;
 import com.vector.comet.util.http.AsyncHttpClient;
 import com.vector.comet.util.http.HttpCallback;
+import com.vector.comet.util.redis.RedisUtil;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.slf4j.Logger;
@@ -49,7 +52,11 @@ public class RoomNettyHandler extends SimpleChannelHandler {
         String userId = requestBean.getUserId();
         final Channel channel = ctx.getChannel();
         UserChannelContext.mapUserChannel(userId, channel);
-        // TODO 对应关系写入redis中
+        // 对应关系写入redis中
+        // 获取本地IP
+        String localIp = IpUtils.getIp();
+        String userIdKey = RedisKey.getUserId2IpKey(userId);
+        RedisUtil.setValue(userIdKey, localIp);
 
         // 异步请求
         AsyncHttpClient.getInstance().asyncPost(requestBean.getUrl(), requestBean.getParams(), new HttpCallback() {

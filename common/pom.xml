@@ -72,5 +72,11 @@
             <artifactId>disruptor</artifactId>
         </dependency>
         <!--=============log end=======================-->
+
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+
     </dependencies>
 </project>
